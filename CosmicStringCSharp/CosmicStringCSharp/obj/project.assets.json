@@ -1,11 +1,50 @@
 {
   "version": 3,
   "targets": {
-    "net6.0": {}
+    "net6.0": {
+      "MathNet.Numerics/5.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/MathNet.Numerics.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/MathNet.Numerics.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "MathNet.Numerics/5.0.0": {
+      "sha512": "pg1W2VwaEQMAiTpGK840hZgzavnqjlCMTVSbtVCXVyT+7AX4mc1o89SPv4TBlAjhgCOo9c1Y+jZ5m3ti2YgGgA==",
+      "type": "package",
+      "path": "mathnet.numerics/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net461/MathNet.Numerics.dll",
+        "lib/net461/MathNet.Numerics.xml",
+        "lib/net48/MathNet.Numerics.dll",
+        "lib/net48/MathNet.Numerics.xml",
+        "lib/net5.0/MathNet.Numerics.dll",
+        "lib/net5.0/MathNet.Numerics.xml",
+        "lib/net6.0/MathNet.Numerics.dll",
+        "lib/net6.0/MathNet.Numerics.xml",
+        "lib/netstandard2.0/MathNet.Numerics.dll",
+        "lib/netstandard2.0/MathNet.Numerics.xml",
+        "mathnet.numerics.5.0.0.nupkg.sha512",
+        "mathnet.numerics.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net6.0": []
+    "net6.0": [
+      "MathNet.Numerics >= 5.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\shosh\\.nuget\\packages\\": {},
@@ -14,11 +53,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
+      "projectUniqueName": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
       "projectName": "CosmicStringCSharp",
-      "projectPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
+      "projectPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
       "packagesPath": "C:\\Users\\shosh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\obj\\",
+      "outputPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -51,6 +90,12 @@
     "frameworks": {
       "net6.0": {
         "targetAlias": "net6.0",
+        "dependencies": {
+          "MathNet.Numerics": {
+            "target": "Package",
+            "version": "[5.0.0, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

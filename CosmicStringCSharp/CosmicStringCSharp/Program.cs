@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using MathNet.Numerics;  // Added MathNet.Numerics namespace
 
 namespace CosmicStringSuperposition
 {
@@ -9,8 +10,8 @@ namespace CosmicStringSuperposition
         // Global switching duration T (will be set by user input).
         static double T = 1.0;
 
-        // Threshold for treating a denominator as zero.
-        const double threshold = 1e-12;
+        // Increased threshold for treating a value as zero (now 1e-8)
+        const double threshold = 1e-8;
 
         /// <summary>
         /// Theta(x) = 1 if x > 0, else 0.
@@ -38,7 +39,7 @@ namespace CosmicStringSuperposition
 
         /// <summary>
         /// Compute P_D(Omega, r) as defined:
-        /// P_D = (T^2/16)*exp(-|Omega|*T)*Σ[d=0..D-1]{ 1/(4*r^2*sin^2(pi*d/D) + T^2) }
+        /// P_D = (T^2/16)*exp(-|Omega|T)*Σ[d=0..D-1]{ 1/(4*r^2*sin^2(pi*d/D) + T^2) }
         ///       + Theta(Omega)*(T^3/8)*Σ[d=0..D-1]{ sin(2*Omega*T*sin(pi*d/D))/(2*r*sin(pi*d/D)*(4*r^2*sin^2(pi*d/D) + T^2)) }.
         /// If sin(pi*d/D) is nearly zero, the limit is used.
         /// </summary>
@@ -50,7 +51,7 @@ namespace CosmicStringSuperposition
                 double angle = Math.PI * d / D;
                 double sAngle = Math.Sin(angle);
                 double denom = 4.0 * r * r * sAngle * sAngle + T * T;
-                if (Math.Abs(denom) < threshold)
+                if (Precision.AlmostEqual(denom, 0.0, threshold))
                     throw new Exception($"ComputeP: Denom=0 in first sum for d={d}, r={r}, T={T}");
                 sum1 += 1.0 / denom;
             }
@@ -64,14 +65,16 @@ namespace CosmicStringSuperposition
                     double angle = Math.PI * d / D;
                     double sAngle = Math.Sin(angle);
                     double denom = 4.0 * r * r * sAngle * sAngle + T * T;
-                    if (Math.Abs(denom) < threshold)
+                    if (Precision.AlmostEqual(denom, 0.0, threshold))
                         throw new Exception($"ComputeP: Denom=0 in second sum for d={d}, r={r}, T={T}");
 
                     double termVal = 0.0;
-                    if (Math.Abs(sAngle) < threshold)
+                    if (Precision.AlmostEqual(sAngle, 0.0, threshold))
                     {
-                        // As sAngle -> 0, use limit: sin(2*Omega*T*sAngle) ~ 2*Omega*T*sAngle.
-                        termVal = (2.0 * Omega * T) / (2.0 * r * T * T);  // simplifies to Omega/(r*T)
+                        // As sAngle -> 0, use the limit:
+                        // sin(2*Omega*T*sAngle) ~ 2*Omega*T*sAngle,
+                        // so term becomes: (2*Omega*T*sAngle)/(2*r*T^2*sAngle) = Omega/(r*T)
+                        termVal = Omega / (r * T);
                     }
                     else
                     {
@@ -87,8 +90,8 @@ namespace CosmicStringSuperposition
 
         /// <summary>
         /// Compute L_{NM}(Omega, r) as defined:
-        /// L_{NM} = (T^2/16)*exp(-|Omega|*T)*Σ[n=0..N-1]Σ[m=0..M-1]{ 1/(4*r^2*sin^2(pi(n/N - m/M)) + T^2) }
-        ///           + Theta(Omega)*(T^3/8)*Σ[n=0..N-1]Σ[m=0..M-1]{ sin(2*r*Omega*sin(pi(n/N - m/M)))/(2*r*sin(pi(n/N - m/M))*(4*r^2*sin^2(pi(n/N - m/M)) + T^2)) }.
+        /// L_{NM} = (T^2/16)*exp(-|Omega|T)*Σ[n=0..N-1]Σ[m=0..M-1]{ 1/(4*r^2*sin^2(pi(n/N - m/M)) + T^2) }
+        ///          + Theta(Omega)*(T^3/8)*Σ[n=0..N-1]Σ[m=0..M-1]{ sin(2*r*Omega*sin(pi(n/N - m/M)))/(2*r*sin(pi(n/N - m/M))*(4*r^2*sin^2(pi(n/N - m/M)) + T^2)) }.
         /// If sin(pi(n/N - m/M)) is nearly zero, the limit is used.
         /// </summary>
         static double ComputeL(int N, int M, double Omega, double r)
@@ -101,7 +104,7 @@ namespace CosmicStringSuperposition
                     double angle = Math.PI * ((double)n / N - (double)m / M);
                     double sAngle = Math.Sin(angle);
                     double denom = 4.0 * r * r * sAngle * sAngle + T * T;
-                    if (Math.Abs(denom) < threshold)
+                    if (Precision.AlmostEqual(denom, 0.0, threshold))
                         throw new Exception($"ComputeL: Denom=0 in first sum for n={n}, m={m}, r={r}, T={T}");
                     sum1 += 1.0 / denom;
                 }
@@ -118,14 +121,16 @@ namespace CosmicStringSuperposition
                         double angle = Math.PI * ((double)n / N - (double)m / M);
                         double sAngle = Math.Sin(angle);
                         double denom = 4.0 * r * r * sAngle * sAngle + T * T;
-                        if (Math.Abs(denom) < threshold)
+                        if (Precision.AlmostEqual(denom, 0.0, threshold))
                             throw new Exception($"ComputeL: Denom=0 in second sum for n={n}, m={m}, r={r}, T={T}");
 
                         double termVal = 0.0;
-                        if (Math.Abs(sAngle) < threshold)
+                        if (Precision.AlmostEqual(sAngle, 0.0, threshold))
                         {
-                            // As sAngle -> 0, use limit: sin(2*r*Omega*sAngle) ~ 2*r*Omega*sAngle.
-                            termVal = (2.0 * r * Omega) / (2.0 * r * T * T);  // simplifies to Omega/(T^2)
+                            // As sAngle -> 0, use the limit:
+                            // sin(2*r*Omega*sAngle) ~ 2*r*Omega*sAngle,
+                            // so term becomes: (2*r*Omega*sAngle)/(2*r*T^2*sAngle) = Omega/(T^2)
+                            termVal = Omega / (T * T);
                         }
                         else
                         {

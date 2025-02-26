@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj": {}
+    "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj": {
+    "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
+        "projectUniqueName": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
         "projectName": "CosmicStringCSharp",
-        "projectPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
+        "projectPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\CosmicStringCSharp.csproj",
         "packagesPath": "C:\\Users\\shosh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicString\\CosmicStringCSharp\\CosmicStringCSharp\\obj\\",
+        "outputPath": "C:\\Users\\shosh\\Documents\\Git\\CosmicStringCalculation\\CosmicStringCSharp\\CosmicStringCSharp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -44,6 +44,12 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
+          "dependencies": {
+            "MathNet.Numerics": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
