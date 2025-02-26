@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net6.0": {
+    "net6.0-windows7.0": {
       "DynamicObj/2.0.0": {
         "type": "package",
         "dependencies": {
@@ -86,6 +86,19 @@
         "runtime": {
           "lib/net6.0/Giraffe.ViewEngine.StrongName.dll": {
             "related": ".pdb;.xml"
+          }
+        }
+      },
+      "HelixToolkit.Wpf/2.26.0": {
+        "type": "package",
+        "compile": {
+          "lib/net462/HelixToolkit.Wpf.dll": {
+            "related": ".XML"
+          }
+        },
+        "runtime": {
+          "lib/net462/HelixToolkit.Wpf.dll": {
+            "related": ".XML"
           }
         }
       },
@@ -210,6 +223,24 @@
         "lib/netstandard2.0/Giraffe.ViewEngine.StrongName.xml"
       ]
     },
+    "HelixToolkit.Wpf/2.26.0": {
+      "sha512": "dy78rhUWCuzYu49WZXfwp8IHiv7wK3IHJ+LWBrF7RCRUbmtWjN2Z2TJARjS5ta0hOYE6ViQeFr/LP38oH8TSZw==",
+      "type": "package",
+      "path": "helixtoolkit.wpf/2.26.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "AUTHORS",
+        "CONTRIBUTORS",
+        "LICENSE",
+        "README.md",
+        "helixtoolkit.png",
+        "helixtoolkit.wpf.2.26.0.nupkg.sha512",
+        "helixtoolkit.wpf.nuspec",
+        "lib/net462/HelixToolkit.Wpf.XML",
+        "lib/net462/HelixToolkit.Wpf.dll"
+      ]
+    },
     "MathNet.Numerics/5.0.0": {
       "sha512": "pg1W2VwaEQMAiTpGK840hZgzavnqjlCMTVSbtVCXVyT+7AX4mc1o89SPv4TBlAjhgCOo9c1Y+jZ5m3ti2YgGgA==",
       "type": "package",
@@ -276,7 +307,8 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net6.0": [
+    "net6.0-windows7.0": [
+      "HelixToolkit.Wpf >= 2.26.0",
       "MathNet.Numerics >= 5.0.0",
       "Plotly.NET >= 5.1.0"
     ]
@@ -303,7 +335,7 @@
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net6.0"
+        "net6.0-windows"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -311,8 +343,8 @@
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net6.0-windows7.0": {
+          "targetAlias": "net6.0-windows",
           "projectReferences": {}
         }
       },
@@ -323,9 +355,13 @@
       }
     },
     "frameworks": {
-      "net6.0": {
-        "targetAlias": "net6.0",
+      "net6.0-windows7.0": {
+        "targetAlias": "net6.0-windows",
         "dependencies": {
+          "HelixToolkit.Wpf": {
+            "target": "Package",
+            "version": "[2.26.0, )"
+          },
           "MathNet.Numerics": {
             "target": "Package",
             "version": "[5.0.0, )"
@@ -349,10 +385,25 @@
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
+          },
+          "Microsoft.WindowsDesktop.App.WPF": {
+            "privateAssets": "none"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.402\\RuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'HelixToolkit.Wpf 2.26.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0-windows7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "HelixToolkit.Wpf",
+      "targetGraphs": [
+        "net6.0-windows7.0"
+      ]
+    }
+  ]
 }

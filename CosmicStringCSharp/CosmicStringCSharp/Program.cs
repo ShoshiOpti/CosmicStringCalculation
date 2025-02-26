@@ -1,7 +1,15 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using CosmicStringCSharp;
+using HelixToolkit.Wpf;
+using System.Linq;
+using System.Windows.Media.Media3D;
+using System.Windows.Media;
 using MathNet.Numerics;  // Added MathNet.Numerics namespace
+
+using System.Windows;
+using HelixToolkit.Wpf;
 
 namespace CosmicStringSuperposition
 {
@@ -145,6 +153,7 @@ namespace CosmicStringSuperposition
             return term1 + term2;
         }
 
+        [STAThread]
         static void Main(string[] args)
         {
             //-------------------------------------------------------------------------
@@ -229,11 +238,115 @@ namespace CosmicStringSuperposition
             }
 
             //-------------------------------------------------------------------------
-            // 8. Inform the user and wait for key press before exiting.
+            // 8. Inform the user that CSV generation is complete.
             //-------------------------------------------------------------------------
             Console.WriteLine("CSV file generated successfully on the Desktop.");
+
+            //-------------------------------------------------------------------------
+            // 9. Ask the user if they want to visualize the data.
+            //-------------------------------------------------------------------------
+            Console.Write("Do you want to visualize the data in 3D? (yes/no): ");
+            string answer = Console.ReadLine()?.Trim().ToLower();
+            if (answer == "yes" || answer == "y")
+            {
+                Console.WriteLine("Launching 3D visualization...");
+                // Call the HelixToolkit visualizer (make sure this class exists and is referenced)
+                HelixQuantumClassicalPlotter.Show3DPlot(filePath);
+            }
+            else
+            {
+                Console.WriteLine("Visualization skipped.");
+            }
+
             Console.WriteLine("Data generation complete. Press ENTER to exit.");
             Console.ReadLine();
+        }
+    }
+    public class HelixQuantumClassicalPlotter
+    {
+        [STAThread]
+        public static void Show3DPlot(string csvPath)
+        {
+            // Check if file exists
+            if (!File.Exists(csvPath))
+            {
+                Console.WriteLine($"Error: CSV file '{csvPath}' not found.");
+                return;
+            }
+
+            // Parse CSV data (skip header)
+            var lines = File.ReadAllLines(csvPath).Skip(1);
+            var dataRows = lines.Select(line => line.Split(',')).ToList();
+
+            var dataPoints = dataRows.Select(parts => new
+            {
+                Omega = double.Parse(parts[0]),
+                R = double.Parse(parts[1]),
+                PQ = double.Parse(parts[2]),
+                PC = double.Parse(parts[3])
+            }).ToList();
+
+            // Prepare point collections for Quantum (PQ) and Classical (PC)
+            var quantumPoints = new Point3DCollection(
+                dataPoints.Select(dp => new Point3D(dp.Omega, dp.R, dp.PQ))
+            );
+            var classicalPoints = new Point3DCollection(
+                dataPoints.Select(dp => new Point3D(dp.Omega, dp.R, dp.PC))
+            );
+
+            // Create a HelixViewport3D and configure it.
+            var viewport = new HelixViewport3D { Background = Brushes.White };
+
+            // Set up a PerspectiveCamera.
+            viewport.Camera = new PerspectiveCamera
+            {
+                Position = new Point3D(0, -20, 20),
+                LookDirection = new Vector3D(0, 20, -20),
+                UpDirection = new Vector3D(0, 1, 0),
+                FieldOfView = 45
+            };
+
+            // (Optional) Add custom axes (using a helper class or built-in coordinate system).
+            // Here we add a custom AxesHelper3D which you need to implement.
+            var axes = new AxesHelper3D
+            {
+                XLabel = "Omega (Ω)",
+                YLabel = "r",
+                ZLabel = "P",
+                AxisLength = 10.0
+            };
+            viewport.Children.Add(axes);
+
+            // Add the Quantum data points (blue).
+            var quantumVisual = new PointsVisual3D
+            {
+                Color = Colors.Blue,
+                Size = 2.0,
+                Points = quantumPoints
+            };
+            viewport.Children.Add(quantumVisual);
+
+            // Add the Classical data points (red).
+            var classicalVisual = new PointsVisual3D
+            {
+                Color = Colors.Red,
+                Size = 2.0,
+                Points = classicalPoints
+            };
+            viewport.Children.Add(classicalVisual);
+
+            // Create a WPF Window to host the HelixViewport3D.
+            var window = new System.Windows.Window
+            {
+                Title = "3D Visualization (Quantum vs. Classical)",
+                Content = viewport,
+                Width = 1200,
+                Height = 800
+            };
+
+            // Start the WPF application and run the window.
+            var app = new Application();
+            app.Run(window);
         }
     }
 }
