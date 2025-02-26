@@ -48,6 +48,10 @@
             "MathNet.Numerics": {
               "target": "Package",
               "version": "[5.0.0, )"
+            },
+            "Plotly.NET": {
+              "target": "Package",
+              "version": "[5.1.0, )"
             }
           },
           "imports": [
