@@ -9,7 +9,7 @@ namespace CosmicStringSuperposition
         // Global switching duration T (will be set by user input).
         static double T = 1.0;
 
-        // Threshold for treating a sine value as zero.
+        // Threshold for treating a denominator as zero.
         const double threshold = 1e-12;
 
         /// <summary>
@@ -21,10 +21,26 @@ namespace CosmicStringSuperposition
         }
 
         /// <summary>
+        /// Returns a unique file path on the desktop by checking if baseFileName + extension exists.
+        /// If it does, appends numbers until an available file name is found.
+        /// </summary>
+        static string GetUniqueFilePath(string desktopPath, string baseFileName, string extension)
+        {
+            string filePath = Path.Combine(desktopPath, baseFileName + extension);
+            int counter = 1;
+            while (File.Exists(filePath))
+            {
+                filePath = Path.Combine(desktopPath, baseFileName + counter.ToString() + extension);
+                counter++;
+            }
+            return filePath;
+        }
+
+        /// <summary>
         /// Compute P_D(Omega, r) as defined:
-        /// P_D = (T^2/16)*exp(-|Omega|T)*SUM[d=0..D-1]{ 1/(4r^2 sin^2(pi*d/D) + T^2) }
-        ///       + Theta(Omega)*(T^3/8)*SUM[d=0..D-1]{ sin(2*Omega*T*sin(pi*d/D))/(2r*sin(pi*d/D)*(4r^2 sin^2(pi*d/D) + T^2)) }.
-        /// For cases where sin(pi*d/D) is nearly zero, we compute the limit.
+        /// P_D = (T^2/16)*exp(-|Omega|*T)*Σ[d=0..D-1]{ 1/(4*r^2*sin^2(pi*d/D) + T^2) }
+        ///       + Theta(Omega)*(T^3/8)*Σ[d=0..D-1]{ sin(2*Omega*T*sin(pi*d/D))/(2*r*sin(pi*d/D)*(4*r^2*sin^2(pi*d/D) + T^2)) }.
+        /// If sin(pi*d/D) is nearly zero, the limit is used.
         /// </summary>
         static double ComputeP(int D, double Omega, double r)
         {
@@ -54,8 +70,8 @@ namespace CosmicStringSuperposition
                     double termVal = 0.0;
                     if (Math.Abs(sAngle) < threshold)
                     {
-                        // Use the limit as sAngle -> 0: sin(2*Omega*T*sAngle) ~ 2*Omega*T*sAngle.
-                        termVal = (2.0 * Omega * T) / (2.0 * r * T * T); // simplifies to Omega/(r*T)
+                        // As sAngle -> 0, use limit: sin(2*Omega*T*sAngle) ~ 2*Omega*T*sAngle.
+                        termVal = (2.0 * Omega * T) / (2.0 * r * T * T);  // simplifies to Omega/(r*T)
                     }
                     else
                     {
@@ -71,9 +87,9 @@ namespace CosmicStringSuperposition
 
         /// <summary>
         /// Compute L_{NM}(Omega, r) as defined:
-        /// L_{NM} = (T^2/16)*exp(-|Omega|T)*SUM[n=0..N-1]SUM[m=0..M-1]{ 1/(4r^2 sin^2(pi(n/N - m/M)) + T^2) }
-        ///          + Theta(Omega)*(T^3/8)*SUM[n=0..N-1]SUM[m=0..M-1]{ sin(2*r*Omega*sin(pi(n/N - m/M)))/(2r*sin(pi(n/N - m/M))*(4r^2 sin^2(pi(n/N - m/M)) + T^2)) }.
-        /// For cases where sin(pi(n/N - m/M)) is nearly zero, we compute the limit.
+        /// L_{NM} = (T^2/16)*exp(-|Omega|*T)*Σ[n=0..N-1]Σ[m=0..M-1]{ 1/(4*r^2*sin^2(pi(n/N - m/M)) + T^2) }
+        ///           + Theta(Omega)*(T^3/8)*Σ[n=0..N-1]Σ[m=0..M-1]{ sin(2*r*Omega*sin(pi(n/N - m/M)))/(2*r*sin(pi(n/N - m/M))*(4*r^2*sin^2(pi(n/N - m/M)) + T^2)) }.
+        /// If sin(pi(n/N - m/M)) is nearly zero, the limit is used.
         /// </summary>
         static double ComputeL(int N, int M, double Omega, double r)
         {
@@ -108,8 +124,8 @@ namespace CosmicStringSuperposition
                         double termVal = 0.0;
                         if (Math.Abs(sAngle) < threshold)
                         {
-                            // Use the limit as sAngle -> 0: sin(2*r*Omega*sAngle) ~ 2*r*Omega*sAngle.
-                            termVal = (2.0 * r * Omega) / (2.0 * r * T * T); // simplifies to Omega/(T^2)
+                            // As sAngle -> 0, use limit: sin(2*r*Omega*sAngle) ~ 2*r*Omega*sAngle.
+                            termVal = (2.0 * r * Omega) / (2.0 * r * T * T);  // simplifies to Omega/(T^2)
                         }
                         else
                         {
@@ -145,8 +161,7 @@ namespace CosmicStringSuperposition
             // 3. Define the output CSV file path to the desktop.
             //-------------------------------------------------------------------------
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string fileName = "results.csv";
-            string filePath = Path.Combine(desktopPath, fileName);
+            string filePath = GetUniqueFilePath(desktopPath, "results", ".csv");
             Console.WriteLine($"CSV file will be saved to: {filePath}");
 
             //-------------------------------------------------------------------------
@@ -161,15 +176,15 @@ namespace CosmicStringSuperposition
             double rStep = 0.1;
 
             //-------------------------------------------------------------------------
-            // 5. Open a StreamWriter to output data into a CSV file on the desktop.
+            // 5. Open a StreamWriter to output data into the CSV file.
             //-------------------------------------------------------------------------
             using (StreamWriter writer = new StreamWriter(filePath))
             {
-                // Write CSV header
+                // Write CSV header.
                 writer.WriteLine("Omega,r,PQ,PC");
 
                 //-------------------------------------------------------------------------
-                // 6. Constant parameter: lambda^4 (can be modified or input by user)
+                // 6. Constant parameter: lambda^4 (can be modified or input by user).
                 //-------------------------------------------------------------------------
                 double lambda4 = 1.0;
 
