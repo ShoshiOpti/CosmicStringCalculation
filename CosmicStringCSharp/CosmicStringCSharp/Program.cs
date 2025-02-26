@@ -1,5 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 
@@ -7,56 +6,136 @@ namespace CosmicStringSuperposition
 {
     class Program
     {
+        // Global switching duration T (will be set by user input).
+        static double T = 1.0;
+
         /// <summary>
-        /// Computes the transition probability for a single cosmic-string spacetime,
-        /// P_D(tildeOmega, tildeR), for topological charge D.
-        /// Replace the dummy expression below with your derived formula.
+        /// Theta(x) = 1 if x > 0, else 0.
         /// </summary>
-        static double ComputeP(int D, double Omega, double r)
+        static double Theta(double x)
         {
-            // Dummy placeholder expression for P_D:
-            double dummy = Math.Exp(-0.1 * D * (Omega + r)) * (1.0 + 0.01 * D);
-            return dummy;
+            return (x > 0.0) ? 1.0 : 0.0;
         }
 
         /// <summary>
-        /// Computes the cross-correlation term L_{N,M}(tildeOmega, tildeR) for cosmic string superposition.
-        /// Replace the dummy expression below with your derived formula.
+        /// Compute P_D(Omega, r) as defined:
+        /// P_D = (T^2/16)*exp(-|Omega|*T)*SUM_{d=0}^{D-1}[1/(4*r^2*sin^2(pi*d/D) + T^2)]
+        ///       + Theta(Omega)*(T^3/8)*SUM_{d=0}^{D-1}[sin(2*Omega*T*sin(pi*d/D))/(2*r*sin(pi*d/D)*(4*r^2*sin^2(pi*d/D) + T^2))]
+        /// Throws an exception if any denominator is (nearly) zero.
+        /// </summary>
+        static double ComputeP(int D, double Omega, double r)
+        {
+            double sum1 = 0.0;
+            for (int d = 0; d < D; d++)
+            {
+                double angle = Math.PI * d / D;
+                double sAngle = Math.Sin(angle);
+                double denom = 4.0 * r * r * sAngle * sAngle + T * T;
+                if (Math.Abs(denom) < 1e-12)
+                    throw new Exception($"ComputeP: Denom=0 in first sum for d={d}, r={r}, T={T}");
+                sum1 += 1.0 / denom;
+            }
+            double term1 = (T * T / 16.0) * Math.Exp(-Math.Abs(Omega) * T) * sum1;
+
+            double sum2 = 0.0;
+            if (Omega > 0.0)
+            {
+                for (int d = 0; d < D; d++)
+                {
+                    double angle = Math.PI * d / D;
+                    double sAngle = Math.Sin(angle);
+                    double denom = 4.0 * r * r * sAngle * sAngle + T * T;
+                    if (Math.Abs(denom) < 1e-12)
+                        throw new Exception($"ComputeP: Denom=0 in second sum (denom part) for d={d}, r={r}, T={T}");
+                    if (Math.Abs(sAngle) < 1e-12)
+                        throw new Exception($"ComputeP: sAngle=0 in second sum for d={d}, r={r}");
+
+                    double numerator = Math.Sin(2.0 * Omega * T * sAngle);
+                    double val = numerator / (2.0 * r * sAngle * denom);
+                    sum2 += val;
+                }
+            }
+            double term2 = (T * T * T / 8.0) * sum2;
+            return term1 + term2;
+        }
+
+        /// <summary>
+        /// Compute L_{NM}(Omega, r) as defined:
+        /// L_{NM} = (T^2/16)*exp(-|Omega|*T)*SUM_{n=0}^{N-1}SUM_{m=0}^{M-1}[1/(4*r^2*sin^2(pi(n/N-m/M)) + T^2)]
+        ///          + Theta(Omega)*(T^3/8)*SUM_{n=0}^{N-1}SUM_{m=0}^{M-1}[sin(2*r*Omega*sin(pi(n/N-m/M)))/(2*r*sin(pi(n/N-m/M))*(4*r^2*sin^2(pi(n/N-m/M)) + T^2))]
+        /// Throws an exception if any denominator is (nearly) zero.
         /// </summary>
         static double ComputeL(int N, int M, double Omega, double r)
         {
-            // Dummy placeholder expression for L_{N,M}:
-            double dummy = 0.5 * Math.Sin(0.2 * (N + M) * Omega) * Math.Exp(-0.1 * r);
-            return dummy;
+            double sum1 = 0.0;
+            for (int n = 0; n < N; n++)
+            {
+                for (int m = 0; m < M; m++)
+                {
+                    double angle = Math.PI * ((double)n / N - (double)m / M);
+                    double sAngle = Math.Sin(angle);
+                    double denom = 4.0 * r * r * sAngle * sAngle + T * T;
+                    if (Math.Abs(denom) < 1e-12)
+                        throw new Exception($"ComputeL: Denom=0 in first sum for n={n}, m={m}, r={r}, T={T}");
+                    sum1 += 1.0 / denom;
+                }
+            }
+            double term1 = (T * T / 16.0) * Math.Exp(-Math.Abs(Omega) * T) * sum1;
+
+            double sum2 = 0.0;
+            if (Omega > 0.0)
+            {
+                for (int n = 0; n < N; n++)
+                {
+                    for (int m = 0; m < M; m++)
+                    {
+                        double angle = Math.PI * ((double)n / N - (double)m / M);
+                        double sAngle = Math.Sin(angle);
+                        double denom = 4.0 * r * r * sAngle * sAngle + T * T;
+                        if (Math.Abs(denom) < 1e-12)
+                            throw new Exception($"ComputeL: Denom=0 in second sum (denom part) for n={n}, m={m}, r={r}, T={T}");
+                        if (Math.Abs(sAngle) < 1e-12)
+                            throw new Exception($"ComputeL: sAngle=0 in second sum for n={n}, m={m}, r={r}");
+
+                        double numerator = Math.Sin(2.0 * r * Omega * sAngle);
+                        double val = numerator / (2.0 * r * sAngle * denom);
+                        sum2 += val;
+                    }
+                }
+            }
+            double term2 = (T * T * T / 8.0) * sum2;
+            return term1 + term2;
         }
 
         static void Main(string[] args)
         {
-            //--------------------------------------------------------------------------
-            // 1. Prompt user for topological charges N and M (each <= 3)
-            //--------------------------------------------------------------------------
+            //-------------------------------------------------------------------------
+            // 1. Prompt user for switching time T.
+            //-------------------------------------------------------------------------
+            Console.Write("Enter switching time T (positive number): ");
+            T = double.Parse(Console.ReadLine() ?? "1.0", CultureInfo.InvariantCulture);
+
+            //-------------------------------------------------------------------------
+            // 2. Prompt user for topological charges N and M (each <= 3)
+            //-------------------------------------------------------------------------
             Console.Write("Enter N (integer <= 3): ");
             int N = int.Parse(Console.ReadLine() ?? "1");
 
             Console.Write("Enter M (integer <= 3): ");
             int M = int.Parse(Console.ReadLine() ?? "1");
 
-            //--------------------------------------------------------------------------
-            // 2. Define the output CSV file path to the desktop.
-            //--------------------------------------------------------------------------
-            // Get the desktop folder path.
+            //-------------------------------------------------------------------------
+            // 3. Define the output CSV file path to the desktop.
+            //-------------------------------------------------------------------------
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string fileName = "results.csv";
             string filePath = Path.Combine(desktopPath, fileName);
-
-            // Inform the user of the file destination.
             Console.WriteLine($"CSV file will be saved to: {filePath}");
 
-            //--------------------------------------------------------------------------
-            // 3. Define the range and step for dimensionless energy gap (Omega) and radius (r).
-            //    Adjust these values as needed.
-            //--------------------------------------------------------------------------
-            double OmegaStart = 0.1;
+            //-------------------------------------------------------------------------
+            // 4. Define the range and step for dimensionless energy gap (Omega) and radius (r).
+            //-------------------------------------------------------------------------
+            double OmegaStart = -5.0;
             double OmegaEnd = 5.0;
             double OmegaStep = 0.1;
 
@@ -64,55 +143,57 @@ namespace CosmicStringSuperposition
             double rEnd = 5.0;
             double rStep = 0.1;
 
-            //--------------------------------------------------------------------------
-            // 4. Open a StreamWriter to output data into a CSV file on the desktop.
-            //--------------------------------------------------------------------------
+            //-------------------------------------------------------------------------
+            // 5. Open a StreamWriter to output data into a CSV file on the desktop.
+            //-------------------------------------------------------------------------
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 // Write CSV header
                 writer.WriteLine("Omega,r,PQ,PC");
 
-                //--------------------------------------------------------------------------
-                // 5. Constant parameter: lambda^4 (can be modified or input by user)
-                //--------------------------------------------------------------------------
+                //-------------------------------------------------------------------------
+                // 6. Constant parameter: lambda^4 (can be modified or input by user)
+                //-------------------------------------------------------------------------
                 double lambda4 = 1.0;
 
-                //--------------------------------------------------------------------------
-                // 6. Loop over the ranges of Omega and r to compute transition probabilities
-                //--------------------------------------------------------------------------
+                //-------------------------------------------------------------------------
+                // 7. Loop over the ranges of Omega and r to compute transition probabilities.
+                //    If an error is encountered (e.g. division by zero), the error message is written.
+                //-------------------------------------------------------------------------
                 for (double Omega = OmegaStart; Omega <= OmegaEnd + 1e-9; Omega += OmegaStep)
                 {
                     for (double r = rStart; r <= rEnd + 1e-9; r += rStep)
                     {
-                        // Compute the single detector responses for each topological charge:
-                        double P_A = ComputeP(N, Omega, r);  // for cosmic string with charge N
-                        double P_B = ComputeP(M, Omega, r);  // for cosmic string with charge M
+                        string PQ_str, PC_str;
+                        try
+                        {
+                            double P_A = ComputeP(N, Omega, r);  // for cosmic string with charge N
+                            double P_B = ComputeP(M, Omega, r);  // for cosmic string with charge M
+                            double L_AB = ComputeL(N, M, Omega, r);
 
-                        // Compute the cross-correlation term L_{AB} = L_{N,M}(Omega, r)
-                        double L_AB = ComputeL(N, M, Omega, r);
+                            double P_C = 0.5 * lambda4 * (P_A + P_B);
+                            double P_Q = 0.5 * lambda4 * (P_A + P_B + 2.0 * L_AB);
 
-                        //--------------------------------------------------------------------------
-                        // 7. Compute "Classical" and "Quantum" transition probabilities:
-                        //
-                        //    Classical: P_{AB}^C = (lambda^4 / 2) * [P_A + P_B]
-                        //    Quantum:   P_{AB}^Q = (lambda^4 / 2) * [P_A + P_B + 2*L_{AB}]
-                        //--------------------------------------------------------------------------
-                        double P_C = 0.5 * lambda4 * (P_A + P_B);
-                        double P_Q = 0.5 * lambda4 * (P_A + P_B + 2.0 * L_AB);
+                            PQ_str = P_Q.ToString("E6", CultureInfo.InvariantCulture);
+                            PC_str = P_C.ToString("E6", CultureInfo.InvariantCulture);
+                        }
+                        catch (Exception ex)
+                        {
+                            // If any error occurs, assign the error message for both PQ and PC.
+                            PQ_str = "Error: " + ex.Message;
+                            PC_str = "Error: " + ex.Message;
+                        }
 
-                        //--------------------------------------------------------------------------
-                        // 8. Write the computed values to the CSV file in a structured format.
-                        //--------------------------------------------------------------------------
                         writer.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                                      "{0:F4},{1:F4},{2:E6},{3:E6}",
-                                      Omega, r, P_Q, P_C));
+                                      "{0:F4},{1:F4},{2},{3}",
+                                      Omega, r, PQ_str, PC_str));
                     }
                 }
             }
 
-            //--------------------------------------------------------------------------
-            // 9. Inform the user and wait for key press before exiting.
-            //--------------------------------------------------------------------------
+            //-------------------------------------------------------------------------
+            // 8. Inform the user and wait for key press before exiting.
+            //-------------------------------------------------------------------------
             Console.WriteLine("CSV file generated successfully on the Desktop.");
             Console.WriteLine("Data generation complete. Press ENTER to exit.");
             Console.ReadLine();
